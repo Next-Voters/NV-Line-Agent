@@ -19,5 +19,4 @@ class ResearchQuestion(BaseModel):
     """Schema for structured research brief generation."""
     
     research_brief: str = Field(
-        description="A research question that will be used to guide the research.",
-    )
+        des
