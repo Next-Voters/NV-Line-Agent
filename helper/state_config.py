@@ -47,4 +47,15 @@ class ResearcherState(TypedDict):
     tool_call_iterations: int
     research_topic: str
     compressed_research: str
-    raw_notes: Annotated[List[str], operat
+    raw_notes: Annotated[List[str], operator.add]
+
+class ResearcherOutputState(TypedDict):
+    """
+    Output state for the research agent containing final research results.
+    
+    This represents the final output of the research process with compressed
+    research findings and all raw notes from the research process.
+    """
+    compressed_research: str
+    raw_notes: Annotated[List[str], operator.add]
+    researcher_messages: Annotated[Sequence[BaseMessage], add_messages]
