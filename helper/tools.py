@@ -6,6 +6,7 @@ including search/summarization tool and thinking tool.
 
 
 from typing_extensions import Annotated, Literal
+from pydantic import BaseModel, Field
 
 from langchain.chat_models import init_chat_model 
 
@@ -18,18 +19,14 @@ from helper.utils import tavily_search_multiple, deduplicate_search_results, pro
 summarization_model = init_chat_model(model="openai:gpt-4.1-mini")
 tavily_client = TavilyClient()
 
-@tool(parse_docstring=True)
+@tool
 def tavily_search(
     query: str,
-    max_results: Annotated[int, InjectedToolArg] = 3,
-    topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
 ) -> str:
     """Fetch results from Tavily search API with content summarization.
 
     Args:
         query: A single search query to execute
-        max_results: Maximum number of results to return
-        topic: Topic to filter results by ('general', 'news', 'finance')
 
     Returns:
         Formatted string of search results with summaries
@@ -37,8 +34,8 @@ def tavily_search(
     # Execute search for single query
     search_results = tavily_search_multiple(
         [query],  # Convert single query to list for the internal function
-        max_results=max_results,
-        topic=topic,
+        max_results=3,
+        topic="general",
         include_raw_content=True,
     )
 
@@ -51,7 +48,7 @@ def tavily_search(
     # Format output for consumption
     return format_search_output(summarized_results)
 
-@tool(parse_docstring=True)
+@tool
 def think_tool(reflection: str) -> str:
     """Tool for strategic reflection on research progress and decision-making.
     
@@ -77,3 +74,15 @@ def think_tool(reflection: str) -> str:
         Confirmation that reflection was recorded for decision-making
     """
     return f"Reflection recorded: {reflection}"
+
+@tool
+class ConductResearch():
+    """Tool for delegating a research task to a specialized sub-agent."""
+    research_topic: str = Field(
+        description="The topic to research. Should be a single topic, and should be described in high detail (at least a paragraph).",
+    )
+
+@tool
+class ResearchComplete(BaseModel):
+    """Tool for indicating that the research process is complete."""
+    pass
