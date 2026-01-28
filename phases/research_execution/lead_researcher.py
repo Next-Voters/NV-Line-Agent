@@ -22,7 +22,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.types import Command
 
 from helper.prompts import lead_researcher_prompt
-from phases.researcher import researcher_agent
+from phases.research_execution.researcher import researcher_agent
 from helper.state_config import SupervisorState
 from helper.tools import think_tool, ConductResearch, ResearchComplete
 from helper.utils import get_today_str, get_notes_from_tool_calls
@@ -31,7 +31,7 @@ from dotenv import load_dotenv
 load_dotenv()   
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = init_chat_model(model="openai:gpt-5-mini")
+supervisor_model = init_chat_model(model="openai:gpt-4.1")
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants
