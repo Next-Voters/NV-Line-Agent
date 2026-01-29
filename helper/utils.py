@@ -7,7 +7,7 @@ from datetime import datetime
 
 from typing_extensions import List, Literal
 
-from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.messages import HumanMessage, BaseMessage, filter_messages
 from langchain_core.runnables import RunnableConfig
 from langchain.chat_models import init_chat_model
 
