@@ -36,7 +36,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from phases.research_scope import clarify_with_user, write_research_brief
 from phases.research_execution.researcher import researcher_agent
 from phases.research_execution.lead_researcher import supervisor_agent
-from phases.research_execution.writer import final_report_generation
+from phases.research_execution.writer import final_report_generation, save_final_report
 
 from helper.state_config import AgentState, AgentInputState
 
@@ -109,10 +109,12 @@ def build_research_execution_graph():
     agent_builder = StateGraph(AgentState, input_state=AgentInputState)
     agent_builder.add_node("supervisor_subgraph", supervisor_agent)
     agent_builder.add_node("final_report_generation", final_report_generation)
+    agent_builder.add_node("save_final_report", save_final_report)
 
     agent_builder.add_edge(START, "supervisor_subgraph")
     agent_builder.add_edge("supervisor_subgraph", "final_report_generation")    
-    agent_builder.add_edge("final_report_generation", END)
+    agent_builder.add_edge("final_report_generation", "save_final_report")
+    agent_builder.add_edge("save_final_report", END)
 
     # Checkpointer saves messages even after agent runs once
     checkpointer = InMemorySaver()
