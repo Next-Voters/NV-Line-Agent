@@ -10,10 +10,10 @@ from langgraph.graph import MessagesState
 from langgraph.graph.message import add_messages
 
 class AgentInputState(MessagesState):
-    """Input state for the full agent - only contains messages from user input."""
+    """Input state for the general agent workflow - only contains messages from user input."""
     pass
 
-class AgentState(MessagesState):
+class ResearchScopeState(MessagesState):
     """
     Main state for the full multi-agent research system.
     
@@ -23,7 +23,17 @@ class AgentState(MessagesState):
     """
 
     # Research brief generated from user conversation history
-    research_brief: Optional[str]
+    research_brief: str
+
+class ResearchExecutionState(MessagesState):
+    """
+    Main state for the full multi-agent research system.
+    
+    Extends MessagesState with additional fields for research coordination.
+    Note: Some fields are duplicated across different state classes for proper
+    state management between subgraphs and the main workflow.
+    """
+    
     # Messages exchanged with the supervisor agent for coordination
     supervisor_messages: Annotated[Sequence[BaseMessage], add_messages]
     # Raw unprocessed research notes collected during the research phase

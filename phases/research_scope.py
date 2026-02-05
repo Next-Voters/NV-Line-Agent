@@ -75,6 +75,5 @@ def write_research_brief(state: AgentState):
     
     # Update state with generated research brief and pass it to the supervisor
     return {
-        "research_brief": response.research_brief,
-        "supervisor_messages": [HumanMessage(content=f"{response.research_brief}.")]
+        "research_brief": response.research_brief
     }
