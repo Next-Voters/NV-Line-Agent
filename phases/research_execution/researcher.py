@@ -21,7 +21,7 @@ tools = [
 ]
 tools_by_name = {tool.name: tool for tool in tools}
 
-model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
+model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
 model_with_tools = model.bind_tools(tools)
 
 def llm_call(state: ResearcherState):

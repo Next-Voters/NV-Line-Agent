@@ -29,7 +29,7 @@ from dotenv import load_dotenv
 load_dotenv()   
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = init_chat_model(model="openai:gpt-4.1")
+supervisor_model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants
