@@ -5,18 +5,32 @@ including user clarification, research brief generation, and report synthesis.
 """
 
 clarify_with_user_instructions="""
-These are the messages that have been exchanged so far from the user asking for the report:
+These are the messages that have been exchanged so far from the user asking for the report. Use these as context for your clarification. If the user does off-topic, guide them back to the topic and use these messages as context:
 <Messages>
 {messages}
 </Messages>
 
 Today's date is {date}.
 
-Assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
+FIRST, carefully analyze what information the user has ALREADY provided in the message history. Create a mental checklist of:
+- Budget constraints mentioned
+- Specific preferences stated  
+- Use cases described
+- Technical requirements specified
+- Any other concrete details provided
+
+THEN, assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
+
+CRITICAL ANALYSIS REQUIREMENTS:
+1. BEFORE asking any question, review the ENTIRE message history to ensure the information hasn't already been provided
+2. If the user mentioned "no preferences", "no other requirements", "anything else", or similar phrases - this means they are DONE providing information and you should proceed
+3. Look for explicit statements where the user says they've provided all necessary information
+4. If the user gives minimal responses like "no", "that's it", or "nothing else" - this signals they want you to proceed with research
+
 IMPORTANT: If you can see in the messages history that you have already asked a clarifying question, you almost always do not need to ask another one. Only ask another question if ABSOLUTELY NECESSARY.
 CRITICAL RULE: Limit clarifying questions to MAXIMUM 3 rounds. After 3 clarification exchanges, you MUST proceed with research using the information provided. You don't need a full thesis dissertation - be happy with enough context to provide a helpful research response.
 
-If there are acronyms, abbreviations, or unknown terms, ask the user to clarify.
+If there are acronyms, abbreviations, or unknown terms that the user hasn't explained, ask the user to clarify.
 If you need to ask a question, follow these guidelines:
 - Be concise while gathering all necessary information
 - Make sure to gather all the information needed to carry out the research task in a concise, well-structured manner.
