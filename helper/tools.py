@@ -4,20 +4,11 @@ This module provides search and content processing tools for the research agent,
 including search/summarization tool and thinking tool.
 """
 
+from pydantic import BaseModel
+from langchain_core.tools import tool
 
-from typing_extensions import Annotated, Literal
-from pydantic import BaseModel, Field
+from helper.utils import tavily_search_multiple, deduplicate_search_results, process_search_results, format_search_output
 
-from langchain.chat_models import init_chat_model 
-
-from langchain_core.tools import tool, InjectedToolArg
-from tavily import TavilyClient
-
-
-from helper.utils import tavily_search_multiple, deduplicate_search_results, process_search_results
-
-summarization_model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
-tavily_client = TavilyClient()
 
 @tool
 def tavily_search(
@@ -75,12 +66,32 @@ def think_tool(reflection: str) -> str:
     """
     return f"Reflection recorded: {reflection}"
 
-@tool
-class ConductResearch():
-    """Tool for delegating a research task to a specialized sub-agent."""
-    research_topic: str = Field(
-        description="The topic to research. Should be a single topic, and should be described in high detail (at least a paragraph).",
-    )
+@tool(parse_docstring=True)
+def ConductResearch(research_topic: str) -> str:
+    """Tool for delegating a research task to a specialized sub-agent.
+    
+    Use this tool when you need to conduct in-depth research on a specific topic.
+    This tool delegates the research to a specialized sub-agent that will:
+    - Search for relevant information using multiple sources
+    - Analyze and synthesize findings
+    - Provide comprehensive research results
+    
+    When to use:
+    - When you need detailed information on a specific topic
+    - When the user asks for research, analysis, or investigation
+    - When you need to gather facts, data, or examples
+    - When comparing different approaches, technologies, or methods
+    
+    How to use:
+    - Provide a clear, specific research topic
+    - Include sufficient detail (at least a paragraph) for comprehensive research
+    - Focus on one specific topic per tool call
+    - Use multiple tool calls for parallel research on different aspects
+    
+    Args:
+        research_topic: The topic to research. Should be a single topic, and should be described in high detail (at least a paragraph).
+    """
+    return f"Research task delegated for topic: {research_topic}"
 
 @tool
 class ResearchComplete(BaseModel):

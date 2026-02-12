@@ -10,9 +10,13 @@ from typing_extensions import List, Literal
 from langchain_core.messages import HumanMessage, BaseMessage, filter_messages
 from langchain_core.runnables import RunnableConfig
 from langchain.chat_models import init_chat_model
+from tavily import TavilyClient
 
 from helper.llm_output_schema_config import Summary
 from helper.prompts import summarize_webpage_prompt
+
+# Initialize Tavily client
+tavily_client = TavilyClient()
 
 def get_today_str() -> str:
     """Get current date in a human-readable format."""
@@ -49,6 +53,37 @@ def tavily_search_multiple(
 
     return search_docs
 
+def truncate_content_by_tokens(content: str, max_tokens: int = 6000) -> str:
+    """Truncate content to stay within token limits.
+    
+    Args:
+        content: Content to truncate
+        max_tokens: Maximum tokens to keep (leaves room for prompt)
+        
+    Returns:
+        Truncated content
+    """
+    # Rough estimation: 1 token ≈ 4 characters
+    max_chars = max_tokens * 4
+    
+    if len(content) <= max_chars:
+        return content
+    
+    # Try to truncate at sentence boundaries
+    truncated = content[:max_chars]
+    
+    # Find the last sentence ending
+    last_period = truncated.rfind('. ')
+    last_exclamation = truncated.rfind('! ')
+    last_question = truncated.rfind('? ')
+    
+    last_sentence_end = max(last_period, last_exclamation, last_question)
+    
+    if last_sentence_end > max_chars * 0.8:  # Ensure we keep most of the content
+        return truncated[:last_sentence_end + 1]
+    else:
+        return truncated + "..."
+
 def summarize_webpage_content(webpage_content: str) -> str:
     """Summarize webpage content using the configured summarization model.
     
@@ -59,7 +94,10 @@ def summarize_webpage_content(webpage_content: str) -> str:
         Formatted summary with key excerpts
     """
     try:
-        summarization_model = init_chat_model(model="openai:gpt-3.5-turbo")
+        summarization_model = init_chat_model(model="openai:gpt-5-mini")
+
+        # Truncate content to stay within token limits
+        truncated_content = truncate_content_by_tokens(webpage_content, max_tokens=100000)
 
         # Set up structured output model for summarization
         structured_model = summarization_model.with_structured_output(Summary)
@@ -67,7 +105,7 @@ def summarize_webpage_content(webpage_content: str) -> str:
         # Generate summary
         summary = structured_model.invoke([
             HumanMessage(content=summarize_webpage_prompt.format(
-                webpage_content=webpage_content, 
+                webpage_content=truncated_content, 
                 date=get_today_str()
             ))
         ])

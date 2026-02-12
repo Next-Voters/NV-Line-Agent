@@ -37,11 +37,15 @@ from phases.research_scope import clarify_with_user, write_research_brief
 from phases.research_execution.lead_researcher import supervisor_agent
 from phases.research_execution.writer import final_report_generation, save_final_report
 
-from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState, AgentState
+from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState
 
 # Global agent instances for different workflow phases
 research_brief_agent = None
 research_agent = None
+
+# Global checkpointers for state persistence across both phases
+research_scope_checkpointer = InMemorySaver()
+research_execution_checkpointer = InMemorySaver()
 
 def build_research_scope_graph():
     """
@@ -76,8 +80,8 @@ def build_research_scope_graph():
     agent_builder.add_edge("write_research_brief", END)
 
     # Checkpointer saves messages even after agent runs once
-    checkpointer = InMemorySaver()
-    research_brief_agent = agent_builder.compile(checkpointer=checkpointer)
+    global research_scope_checkpointer
+    research_brief_agent = agent_builder.compile(checkpointer=research_scope_checkpointer)
 
 
 def build_research_execution_graph():
@@ -105,7 +109,7 @@ def build_research_execution_graph():
         Sets global research_agent with compiled graph instance
     """
     global research_agent
-    agent_builder = StateGraph(AgentState, input_state=AgentInputState)
+    agent_builder = StateGraph(ResearchExecutionState, input_state=AgentInputState)
     agent_builder.add_node("supervisor_subgraph", supervisor_agent)
     agent_builder.add_node("final_report_generation", final_report_generation)
     agent_builder.add_node("save_final_report", save_final_report)
@@ -116,8 +120,8 @@ def build_research_execution_graph():
     agent_builder.add_edge("save_final_report", END)
 
     # Checkpointer saves messages even after agent runs once
-    checkpointer = InMemorySaver()
-    research_agent = agent_builder.compile(checkpointer=checkpointer)
+    global research_execution_checkpointer
+    research_agent = agent_builder.compile(checkpointer=research_execution_checkpointer)
 
 async def execute_research_scope_phase():
     """
@@ -127,7 +131,7 @@ async def execute_research_scope_phase():
     - Prompts user for initial research request
     - Executes research scope clarification graph
     - Processes user responses until research brief is generated
-    - Manages thread isolation to prevent state contamination
+    - Uses dedicated thread for scope clarification phase
     
     Args:
         None (gets user input via stdin)
@@ -138,14 +142,14 @@ async def execute_research_scope_phase():
             - 'messages': Clarification questions (if more info needed)
             
     Thread Management:
-        Uses hash-based thread_id for isolation between sessions
+        Uses dedicated thread_id for scope clarification phase
         
     State Flow:
         User input → research_brief_agent → result analysis → continue/exit
     """
     message = input("User: ")
-    # Use unique thread_id to avoid state contamination
-    thread = {"configurable": {"thread_id": f"thread_{hash(message)}", "recursion_limit": 50}}
+    # Use dedicated thread for scope clarification phase
+    thread = {"configurable": {"thread_id": "research_scope_thread", "recursion_limit": 50}}
     result = await research_brief_agent.ainvoke({"messages": [HumanMessage(content=message)]}, config=thread)
     return result
 
@@ -158,6 +162,7 @@ async def execute_research_phase(research_brief: str):
     - Executes actual data collection and analysis
     - Generates final research report
     - Uses research brief from previous phase as input
+    - Uses dedicated thread for research execution phase
     
     Args:
         research_brief: Research brief generated from scope clarification phase
@@ -168,18 +173,26 @@ async def execute_research_phase(research_brief: str):
             - 'messages': Status messages
             
     Thread Management:
-        Uses unique thread_id based on research brief agent state
-        Prevents interference with scope clarification phase
+        Uses dedicated thread_id for research execution phase
+        Independent from scope clarification phase
         
     State Flow:
         Research brief → supervisor_subgraph → final_report_generation → result
     """
-    # Use unique thread_id to avoid state contamination
-    thread = {"configurable": {"thread_id": f"research_execution_{hash(research_brief)}", "recursion_limit": 50}}
-    result = await research_agent.ainvoke({
+    # Use dedicated thread for research execution phase
+    thread = {"configurable": {"thread_id": "research_execution_thread", "recursion_limit": 50}}
+    
+    # Initialize state properly for supervisor
+    initial_state = {
         "messages": [HumanMessage(content=research_brief)], 
-        "research_brief": research_brief
-    }, config=thread)
+        "research_brief": research_brief,
+        "supervisor_messages": [HumanMessage(content=research_brief)],
+        "notes": [],
+        "raw_notes": [],
+        "research_iterations": 0
+    }
+    
+    result = await research_agent.ainvoke(initial_state, config=thread)
     return result
 
 async def main_research_workflow():

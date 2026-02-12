@@ -27,7 +27,7 @@ def get_today_str() -> str:
     """Get current date in a human-readable format."""
     return datetime.now().strftime("%a %b %-d, %Y")
 
-model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5-mini", temperature=0.0)
 
 
 def clarify_with_user(state: ResearchScopeState) -> Command[Literal["write_research_brief", "__end__"]]:

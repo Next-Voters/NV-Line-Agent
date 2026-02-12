@@ -29,7 +29,7 @@ from dotenv import load_dotenv
 load_dotenv()   
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
-supervisor_model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
+supervisor_model = init_chat_model(model="openai:gpt-5-mini", temperature=0.0)
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants
@@ -140,19 +140,40 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
 
             # Handle ConductResearch calls (asynchronous)
             if conduct_research_calls:
+                print(f"DEBUG: Found {len(conduct_research_calls)} ConductResearch calls")
                 # Launch parallel research agents
-                coros = [
-                    researcher_agent.ainvoke({
-                        "researcher_messages": [
-                            HumanMessage(content=tool_call["args"]["research_topic"])
-                        ],
-                        "research_topic": tool_call["args"]["research_topic"]
-                    }) 
-                    for tool_call in conduct_research_calls
-                ]
+                coros = []
+                for i, tool_call in enumerate(conduct_research_calls):
+                    try:
+                        print(f"DEBUG: Tool call {i}: {tool_call}")
+                        print(f"DEBUG: Tool call args: {tool_call.get('args', {})}")
+                        
+                        research_topic = tool_call["args"].get("research_topic", "")
+                        if not research_topic:
+                            print(f"Warning: No research_topic found in tool_call args: {tool_call}")
+                            continue
+                            
+                        print(f"DEBUG: Research topic: {research_topic}")
+                        coros.append(
+                            researcher_agent.ainvoke({
+                                "researcher_messages": [
+                                    HumanMessage(content=research_topic)
+                                ],
+                                "research_topic": research_topic
+                            })
+                        )
+                    except Exception as e:
+                        print(f"Error processing tool call {tool_call}: {e}")
+                        continue
 
-                # Wait for all research to complete
-                tool_results = await asyncio.gather(*coros)
+                if not coros:
+                    print("No valid research topics found, ending research")
+                    should_end = True
+                    next_step = END
+                else:
+                    print(f"DEBUG: Launching {len(coros)} research agents")
+                    # Wait for all research to complete
+                    tool_results = await asyncio.gather(*coros)
 
                 # Format research results as tool messages
                 # Each sub-agent returns compressed research findings in result["compressed_research"]

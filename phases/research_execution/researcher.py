@@ -9,7 +9,7 @@ from langgraph.graph import StateGraph, START, END
 from helper.prompts import research_agent_prompt, compress_research_system_prompt, compress_research_human_message
 from helper.state_config import ResearcherState, ResearcherOutputState
 from helper.utils import get_today_str
-from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage
+from langchain_core.messages import ToolMessage, SystemMessage, HumanMessage, filter_messages
 from helper.tools import tavily_search, think_tool
 from dotenv import load_dotenv
 
@@ -21,8 +21,9 @@ tools = [
 ]
 tools_by_name = {tool.name: tool for tool in tools}
 
-model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
+model = init_chat_model(model="openai:gpt-5-mini", temperature=0.0)
 model_with_tools = model.bind_tools(tools)
+compress_model = init_chat_model(model="openai:gpt-5-mini", temperature=0.0)
 
 def llm_call(state: ResearcherState):
     """Analyze current state and decide on next actions.
