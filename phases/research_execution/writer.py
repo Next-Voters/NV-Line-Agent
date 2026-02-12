@@ -60,14 +60,14 @@ def save_final_report(state: AgentState):
         filename = f"final_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md"
         storage_path = f"nv-line-agent/{filename}"
         
-        supabase.storage.from_("reports").upload(
+        supabase.storage.from_("next-voters-summaries").upload(
             path=storage_path,
             file=state["final_report"].encode('utf-8'),
             file_options={"content-type": "text/markdown"}
         )
         
         try:
-            public_url = supabase.storage.from_("reports").get_public_url(storage_path)
+            public_url = f"https://www.nextvoters.com/api/render?path=/nv-line-agent/{filename}"
             message = f"Final report uploaded to Supabase: {public_url}"
         except:
             message = f"Final report uploaded to Supabase: {storage_path}"
