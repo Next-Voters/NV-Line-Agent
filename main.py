@@ -188,7 +188,6 @@ async def execute_research_phase(research_brief: str):
         "research_brief": research_brief,
         "supervisor_messages": [HumanMessage(content=research_brief)],
         "notes": [],
-        "raw_notes": [],
         "research_iterations": 0
     }
     

@@ -97,7 +97,6 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
     
     # Initialize variables for single return pattern
     tool_messages = []
-    all_raw_notes = []
     next_step = "supervisor"  # Default next step
     should_end = False
     
@@ -189,11 +188,6 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
                 
                 tool_messages.extend(research_tool_messages)
 
-                # Aggregate raw notes from all research
-                all_raw_notes = [
-                    "\n".join(result.get("raw_notes", [])) 
-                    for result in tool_results
-                ]
                 
         except Exception as e:
             print(f"Error in supervisor tools: {e}")
@@ -214,7 +208,6 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
             goto=next_step,
             update={
                 "supervisor_messages": tool_messages,
-                "raw_notes": all_raw_notes
             }
         )
 

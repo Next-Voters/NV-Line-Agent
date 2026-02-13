@@ -78,17 +78,8 @@ def compress_research(state: ResearcherState) -> dict:
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
     response = compress_model.invoke(messages)
     
-    # Extract raw notes from tool and AI messages
-    raw_notes = [
-        str(m.content) for m in filter_messages(
-            state["researcher_messages"], 
-            include_types=["tool", "ai"]
-        )
-    ]
-    
     return {
         "compressed_research": str(response.content),
-        "raw_notes": ["\n".join(raw_notes)]
     }
 
 def should_continue(state: ResearcherState) -> Literal["tool_node", "compress_research"]:
