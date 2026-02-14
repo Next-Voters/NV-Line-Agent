@@ -6,7 +6,6 @@ This module implements the final report generation phase of the research workflo
 """
 
 from langchain_core.messages import HumanMessage
-from langgraph.graph import StateGraph, START, END
 
 from helper.utils import get_today_str
 from helper.prompts import final_report_generation_prompt
@@ -37,4 +36,14 @@ async def final_report_generation(state: AgentState):
     return {
         "final_report": final_report.content, 
         "messages": ["Here is the final report: " + final_report.content],
+    }
+
+async def save_final_report(state: AgentState):
+    """
+    Save the final report to a file
+    """
+    with open("final_report.md", "w") as f:
+        f.write(state["final_report"])
+    return {
+        "messages": ["Final report saved to final_report.md"]
     }
