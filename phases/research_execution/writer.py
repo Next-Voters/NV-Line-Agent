@@ -42,7 +42,7 @@ async def final_report_generation(state: AgentState):
         "messages": ["Here is the final report: " + final_report.content],
     }
 
-async def save_final_report(state: AgentState):
+def save_final_report(state: AgentState):
     """
     Save the final report to cloud storage (Supabase only)
     """
