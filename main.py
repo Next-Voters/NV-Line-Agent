@@ -148,7 +148,7 @@ async def execute_research_scope_phase():
     result = await research_brief_agent.ainvoke({"messages": [HumanMessage(content=message)]}, config=thread)
     return result
 
-async def execute_research_phase():
+async def execute_research_phase(research_brief: str):
     """
     Execute the main research and report generation phase.
     
@@ -159,7 +159,7 @@ async def execute_research_phase():
     - Uses research brief from previous phase as input
     
     Args:
-        None (uses global research_brief_agent state)
+        research_brief: Research brief generated from scope clarification phase
         
     Returns:
         dict: Result from research_agent containing:
@@ -174,8 +174,11 @@ async def execute_research_phase():
         Research brief → supervisor_subgraph → final_report_generation → result
     """
     # Use unique thread_id to avoid state contamination
-    thread = {"configurable": {"thread_id": f"research_execution_{hash(str(research_brief_agent))}", "recursion_limit": 50}}
-    result = await research_agent.ainvoke({"messages": []}, config=thread)
+    thread = {"configurable": {"thread_id": f"research_execution_{hash(research_brief)}", "recursion_limit": 50}}
+    result = await research_agent.ainvoke({
+        "messages": [HumanMessage(content=research_brief)], 
+        "research_brief": research_brief
+    }, config=thread)
     return result
 
 async def main_research_workflow():
@@ -211,13 +214,15 @@ async def main_research_workflow():
         - Prints research brief when generated
         - Prints final research report
         - Manages user interaction flow
-    """    
+    """  
+    research_brief = None  
     # Phase 1: Research Scope Clarification
     build_research_scope_graph()
     while True:
         result = await execute_research_scope_phase()
         
         if bool(result.get('research_brief', {})):
+            research_brief = result.get('research_brief')
             print('💼 Research Brief: ', result.get('research_brief'))
             break
         else:
@@ -226,7 +231,7 @@ async def main_research_workflow():
     # Phase 2: Research Execution and Report Generation
     build_research_execution_graph()
     print("🧠 Researching and generating report...")
-    result = await execute_research_phase()
+    result = await execute_research_phase(research_brief)
     print(result.get('messages', [])[-1].content)
 
 
