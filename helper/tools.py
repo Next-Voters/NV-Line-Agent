@@ -16,7 +16,7 @@ from tavily import TavilyClient
 
 from helper.utils import tavily_search_multiple, deduplicate_search_results, process_search_results
 
-summarization_model = init_chat_model(model="openai:gpt-4.1-mini")
+summarization_model = init_chat_model(model="openai:gpt-4o", temperature=0.0)
 tavily_client = TavilyClient()
 
 @tool
