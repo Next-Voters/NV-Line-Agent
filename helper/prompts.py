@@ -14,6 +14,7 @@ Today's date is {date}.
 
 Assess whether you need to ask a clarifying question, or if the user has already provided enough information for you to start research.
 IMPORTANT: If you can see in the messages history that you have already asked a clarifying question, you almost always do not need to ask another one. Only ask another question if ABSOLUTELY NECESSARY.
+CRITICAL RULE: Limit clarifying questions to MAXIMUM 3 rounds. After 3 clarification exchanges, you MUST proceed with research using the information provided. You don't need a full thesis dissertation - be happy with enough context to provide a helpful research response.
 
 If there are acronyms, abbreviations, or unknown terms, ask the user to clarify.
 If you need to ask a question, follow these guidelines:
@@ -21,6 +22,7 @@ If you need to ask a question, follow these guidelines:
 - Make sure to gather all the information needed to carry out the research task in a concise, well-structured manner.
 - Use bullet points or numbered lists if appropriate for clarity. Make sure that this uses markdown formatting and will be rendered correctly if the string output is passed to a markdown renderer.
 - Don't ask for unnecessary information, or information that the user has already provided. If you can see that the user has already provided the information, do not ask for it again.
+- If the user provides a vague response like "no", "that's it", or gives minimal information, consider this as the end of clarification and proceed with research.
 
 Respond in valid JSON format with these exact keys:
 "need_clarification": boolean,
