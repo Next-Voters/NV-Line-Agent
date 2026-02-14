@@ -37,7 +37,7 @@ async def main_loop():
         result = await run_agent()
         
         if bool(result.get('research_brief', {})):
-            print(result.get('research_brief'))
+            print('💼 Research Brief: ', result.get('research_brief'))
             break
         else:
             print(result.get('messages', [])[-1].content)
