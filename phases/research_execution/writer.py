@@ -16,7 +16,7 @@ from helper.prompts import final_report_generation_prompt
 from helper.state_config import AgentState
 
 from langchain.chat_models import init_chat_model
-writer_model = init_chat_model(model="openai:gpt-4o", max_tokens=32000) 
+writer_model = init_chat_model(model="openai:gpt-4o", max_tokens=16384) 
 
 async def final_report_generation(state: AgentState):
     """
