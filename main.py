@@ -36,6 +36,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from phases.research_scope import clarify_with_user, write_research_brief
 from phases.research_execution.lead_researcher import supervisor_agent
 from phases.research_execution.writer import final_report_generation, save_final_report
+from helper.ui import UI
 
 from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState
 
@@ -236,16 +237,16 @@ async def main_research_workflow():
         
         if bool(result.get('research_brief', {})):
             research_brief = result.get('research_brief')
-            print('💼 Research Brief: ', result.get('research_brief'))
+            UI.print_research_brief(research_brief)
             break
         else:
-            print(result.get('messages', [])[-1].content)
+            UI.print_ai_question(result.get('messages', [])[-1].content)
 
     # Phase 2: Research Execution and Report Generation
     build_research_execution_graph()
-    print("🧠 Researching and generating report...")
+    UI.print_status("Researching and generating report...")
     result = await execute_research_phase(research_brief)
-    print(result.get('messages', [])[-1].content)
+    UI.print_final_report(result.get('messages', [])[-1].content)
 
 
 if __name__ == "__main__":

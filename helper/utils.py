@@ -14,6 +14,7 @@ from tavily import TavilyClient
 
 from helper.llm_output_schema_config import Summary
 from helper.prompts import summarize_webpage_prompt
+from helper.ui import UI
 
 # Initialize Tavily client
 tavily_client = TavilyClient()
@@ -119,7 +120,7 @@ def summarize_webpage_content(webpage_content: str) -> str:
         return formatted_summary
         
     except Exception as e:
-        print(f"Failed to summarize webpage: {str(e)}")
+        UI.print_error(f"Failed to summarize webpage: {str(e)}")
         return webpage_content[:1000] + "..." if len(webpage_content) > 1000 else webpage_content
 
 def deduplicate_search_results(search_results: List[dict]) -> dict:

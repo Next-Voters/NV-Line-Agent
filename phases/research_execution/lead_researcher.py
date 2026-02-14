@@ -23,6 +23,7 @@ from helper.prompts import lead_researcher_prompt
 from phases.research_execution.researcher import researcher_agent
 from helper.state_config import SupervisorState
 from helper.tools import think_tool, ConductResearch, ResearchComplete
+from helper.ui import UI
 from helper.utils import get_today_str, get_notes_from_tool_calls
 from dotenv import load_dotenv
 
@@ -139,20 +140,17 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
 
             # Handle ConductResearch calls (asynchronous)
             if conduct_research_calls:
-                print(f"DEBUG: Found {len(conduct_research_calls)} ConductResearch calls")
+                # Extract topics for display
+                topics = [tc["args"].get("research_topic", "General Research") for tc in conduct_research_calls]
+                UI.print_research_topics(topics)
+                
                 # Launch parallel research agents
                 coros = []
                 for i, tool_call in enumerate(conduct_research_calls):
                     try:
-                        print(f"DEBUG: Tool call {i}: {tool_call}")
-                        print(f"DEBUG: Tool call args: {tool_call.get('args', {})}")
-                        
                         research_topic = tool_call["args"].get("research_topic", "")
                         if not research_topic:
-                            print(f"Warning: No research_topic found in tool_call args: {tool_call}")
                             continue
-                            
-                        print(f"DEBUG: Research topic: {research_topic}")
                         coros.append(
                             researcher_agent.ainvoke({
                                 "researcher_messages": [
@@ -166,11 +164,9 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
                         continue
 
                 if not coros:
-                    print("No valid research topics found, ending research")
                     should_end = True
                     next_step = END
                 else:
-                    print(f"DEBUG: Launching {len(coros)} research agents")
                     # Wait for all research to complete
                     tool_results = await asyncio.gather(*coros)
 
@@ -190,7 +186,7 @@ async def supervisor_tools(state: SupervisorState) -> Command[Literal["superviso
 
                 
         except Exception as e:
-            print(f"Error in supervisor tools: {e}")
+            UI.print_error(f"Error in supervisor tools: {e}")
             should_end = True
             next_step = END
     
