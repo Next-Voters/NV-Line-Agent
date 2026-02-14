@@ -34,11 +34,10 @@ from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.memory import InMemorySaver
 
 from phases.research_scope import clarify_with_user, write_research_brief
-from phases.research_execution.researcher import researcher_agent
 from phases.research_execution.lead_researcher import supervisor_agent
 from phases.research_execution.writer import final_report_generation, save_final_report
 
-from helper.state_config import AgentState, AgentInputState
+from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState
 
 # Global agent instances for different workflow phases
 research_brief_agent = None
@@ -69,7 +68,7 @@ def build_research_scope_graph():
         Sets global research_brief_agent with compiled graph instance
     """
     global research_brief_agent
-    agent_builder = StateGraph(AgentState, input_state=AgentInputState)
+    agent_builder = StateGraph(ResearchScopeState, input_state=AgentInputState)
     agent_builder.add_node("clarify_with_user", clarify_with_user)
     agent_builder.add_node("write_research_brief", write_research_brief)
 
@@ -106,7 +105,7 @@ def build_research_execution_graph():
         Sets global research_agent with compiled graph instance
     """
     global research_agent
-    agent_builder = StateGraph(AgentState, input_state=AgentInputState)
+    agent_builder = StateGraph(ResearchExecutionState, input_state=AgentInputState)
     agent_builder.add_node("supervisor_subgraph", supervisor_agent)
     agent_builder.add_node("final_report_generation", final_report_generation)
     agent_builder.add_node("save_final_report", save_final_report)
