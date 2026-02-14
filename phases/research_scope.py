@@ -19,6 +19,9 @@ from langgraph.types import Command
 from helper.prompts import clarify_with_user_instructions, transform_messages_into_research_topic_prompt
 from helper.state_config import AgentState
 from helper.llm_output_schema_config import ClarifyWithUser, ResearchQuestion
+from dotenv import load_dotenv
+
+load_dotenv()   
 
 def get_today_str() -> str:
     """Get current date in a human-readable format."""

@@ -2,18 +2,22 @@
 This module provides search and content processing utilities for the research agent,
 including web search capabilities and content summarization tools.
 """
-from langchain_core.messages import HumanMessage
-from langchain_core.runnables import RunnableConfig
-
 from pathlib import Path
 from datetime import datetime
 
-from typing_extension import List
+from typing_extensions import List, Literal
+
+from langchain_core.messages import HumanMessage, BaseMessage
+from langchain_core.runnables import RunnableConfig
+from langchain.chat_models import init_chat_model
 
 from helper.llm_output_schema_config import Summary
 from helper.prompts import summarize_webpage_prompt
-from helper.state_config import summarization_model
 
+def get_today_str() -> str:
+    """Get current date in a human-readable format."""
+    return datetime.now().strftime("%a %b %-d, %Y")
+    
 def tavily_search_multiple(
     search_queries: List[str], 
     max_results: int = 3, 
@@ -55,6 +59,8 @@ def summarize_webpage_content(webpage_content: str) -> str:
         Formatted summary with key excerpts
     """
     try:
+        summarization_model = init_chat_model(model="openai:gpt-3.5-turbo")
+
         # Set up structured output model for summarization
         structured_model = summarization_model.with_structured_output(Summary)
         
@@ -144,3 +150,20 @@ def format_search_output(summarized_results: dict) -> str:
         formatted_output += "-" * 80 + "\n"
     
     return formatted_output
+
+def get_notes_from_tool_calls(messages: list[BaseMessage]) -> list[str]:
+    """Extract research notes from ToolMessage objects in supervisor message history.
+    
+    This function retrieves the compressed research findings that sub-agents
+    return as ToolMessage content. When the supervisor delegates research to
+    sub-agents via ConductResearch tool calls, each sub-agent returns its
+    compressed findings as the content of a ToolMessage. This function
+    extracts all such ToolMessage content to compile the final research notes.
+    
+    Args:
+        messages: List of messages from supervisor's conversation history
+        
+    Returns:
+        List of research note strings extracted from ToolMessage objects
+    """
+    return [tool_msg.content for tool_msg in filter_messages(messages, include_types="tool")]
