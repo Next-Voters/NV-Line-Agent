@@ -17,7 +17,7 @@ from langgraph.graph import END
 from langgraph.types import Command
 
 from helper.prompts import clarify_with_user_instructions, transform_messages_into_research_topic_prompt
-from helper.state_config import AgentState
+from helper.state_config import ResearchScopeState
 from helper.llm_output_schema_config import ClarifyWithUser, ResearchQuestion
 from dotenv import load_dotenv
 
@@ -30,7 +30,7 @@ def get_today_str() -> str:
 model = init_chat_model(model="openai:gpt-4.1", temperature=0.0)
 
 
-def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brief", "__end__"]]:
+def clarify_with_user(state: ResearchScopeState) -> Command[Literal["write_research_brief", "__end__"]]:
     """
     Determine if the user's request contains sufficient information to proceed with research.
     
@@ -57,7 +57,7 @@ def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brie
             update={"messages": [AIMessage(content=response.verification)]}
         )
 
-def write_research_brief(state: AgentState):
+def write_research_brief(state: ResearchScopeState):
     """
     Transform the conversation history into a comprehensive research brief.
     
