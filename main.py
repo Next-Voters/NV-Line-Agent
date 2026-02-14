@@ -37,7 +37,7 @@ from phases.research_scope import clarify_with_user, write_research_brief
 from phases.research_execution.lead_researcher import supervisor_agent
 from phases.research_execution.writer import final_report_generation, save_final_report
 
-from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState
+from helper.state_config import ResearchScopeState, ResearchExecutionState, AgentInputState, AgentState
 
 # Global agent instances for different workflow phases
 research_brief_agent = None
@@ -105,7 +105,7 @@ def build_research_execution_graph():
         Sets global research_agent with compiled graph instance
     """
     global research_agent
-    agent_builder = StateGraph(ResearchExecutionState, input_state=AgentInputState)
+    agent_builder = StateGraph(AgentState, input_state=AgentInputState)
     agent_builder.add_node("supervisor_subgraph", supervisor_agent)
     agent_builder.add_node("final_report_generation", final_report_generation)
     agent_builder.add_node("save_final_report", save_final_report)
