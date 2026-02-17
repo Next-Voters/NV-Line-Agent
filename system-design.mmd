@@ -1,0 +1,22 @@
+flowchart LR
+    User -->|Request| UC
+    UC --> BG
+    BG --> RS
+    RS -->|Topics| RSA
+    RSA -->|Findings| RS
+    RS --> ORG
+    ORG --> Report
+
+    subgraph Scope
+        UC[User Clarification]
+        BG[Brief Generation]
+    end
+
+    subgraph Research
+        RS[Research Supervisor]
+        RSA[Research Sub-agents]
+    end
+
+    subgraph Write
+        ORG[Report Generation]
+    end
