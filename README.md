@@ -26,10 +26,21 @@ The system operates in two distinct phases:
 - **Writer Agent**: Synthesizes findings into comprehensive final reports
 - **Cloud Storage**: Automatically uploads reports to Supabase storage
 
+Once system generates responses, we test their responses for quality through *LLM evaluations*
+
+### Eval Pipeline
+The research it generates goes through a LLM eval pipeline. It is a mix of **LLM-as-a-judge** and **Human evaluation**:
+
+- Human evaluators complete evals for the first 30-50 items
+- These evaluations, along with a well-defined rubric, as passed as a prompt to a LLM judge for scaling purposes
+- Once evaluations are given, we employ the insights to iteratively improve prompt design.
+  
 ## 📁 Project Structure
 
 ```
 NV-Line-Agent/
+|── evals/                           # Includes notebooks on all LLM eval code
+|   ├──iteration-1.ipynb
 ├── helper/                          # Utility modules and configurations
 │   ├── state_config.py             # State management for agent workflows
 │   ├── prompts.py                  # Prompt templates for all agents
@@ -231,40 +242,4 @@ For issues and questions:
 3. Verify API key setup
 4. Check Supabase bucket configuration
 
-## 🔧 Troubleshooting
-
-### Common Issues
-
-**Git Lock File Error**
-```bash
-rm -f .git/index.lock
-git reset --hard HEAD
-```
-
-**Missing Environment Variables**
-- Verify `.env` file exists and is properly configured
-- Check all required API keys are set
-- Ensure Supabase credentials are correct
-
-**Supabase Upload Failures**
-- Verify bucket exists and is named `"reports"`
-- Check service role key permissions
-- Ensure bucket permissions allow uploads
-
-**Search API Issues**
-- Verify Tavily API key is valid
-- Check internet connectivity
-- Ensure search queries are properly formatted
-
-### Debug Mode
-
-Enable detailed logging by setting:
-```env
-LANGSMITH_TRACING=true
-```
-
-This will provide detailed execution traces for debugging.
-
----
-
-**Built with ❤️ using LangGraph, LangChain, and Supabase**
+**Built with ❤️ by Hemit Patel**
